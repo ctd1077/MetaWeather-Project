@@ -20,7 +20,12 @@ def fetch_weather(woeid):
 
 def display_weather(weather):
     print(f"Weather for {weather['title']}:")
-    print("Replace this message with the weather report!")
+    for entry in weather['consolidated_weather']:
+        date = entry['applicable_date']
+        high = entry['max_temp']
+        low = entry['min_temp']
+        state = entry['weather_state_name']
+        print(f"{date}\t{state}\thigh {high:2.1f}°C\tlow {low:2.1f}°C")
 
 def disambiguate_locations(locations):
     print("Ambiguous location! Did you mean:")
@@ -28,17 +33,20 @@ def disambiguate_locations(locations):
         print(f"\t* {loc['title']}")
 
 def weather_dialog():
-    where = ''
-    while not where:
-        where = input("Where in the world are you? ")
-    locations = fetch_location(where)
-    if len(locations) == 0:
-        print("I don't know where that is.")
-    elif len(locations) > 1:
-        disambiguate_locations(locations)
-    else:
-        woeid = locations[0]['woeid']
-        display_weather(fetch_weather(woeid))
+    try:
+        where = ''
+        while not where:
+            where = input("Where in the world are you? ")
+        locations = fetch_location(where)
+        if len(locations) == 0:
+            print("I don't know where that is.")
+        elif len(locations) > 1:
+            disambiguate_locations(locations)
+        else:
+            woeid = locations[0]['woeid']
+            display_weather(fetch_weather(woeid))
+    except requests.exceptions.ConnectionError:
+        print("Couldn't connect to server! Is the network up?")
 
 
 if __name__ == '__main__':
